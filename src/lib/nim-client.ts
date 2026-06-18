@@ -5,7 +5,7 @@
 import { z } from "zod";
 
 const NIM_BASE_URL = process.env.NIM_BASE_URL || "https://integrate.api.nvidia.com/v1";
-const NIM_MODEL = process.env.NIM_MODEL || "nvidia/llama-3.3-70b-instruct";
+const NIM_MODEL = process.env.NIM_MODEL || "meta/llama-3.1-8b-instruct";
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
