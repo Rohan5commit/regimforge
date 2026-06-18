@@ -2,7 +2,7 @@
  * Deterministic Rule Validator
  * Validates that strategy specs have actionable, quantifiable rules
  */
-import type { StrategySpec } from "./schemas";
+import type { StrategySpec } from "@/regime/classifiers";
 
 export interface ValidationResult {
   valid: boolean;
