@@ -16,6 +16,13 @@
     "plugins": [{ "name": "next" }],
     "paths": {
       "@/*": ["./src/*"],
+      "@/skill/*": ["./src/skill/*"],
+      "@/regime/*": ["./src/regime/*"],
+      "@/backtest/*": ["./src/backtest/*"],
+      "@/ai/*": ["./src/ai/*"],
+      "@/orchestration/*": ["./src/orchestration/*"],
+      "@/data/*": ["./src/data/*"],
+      "@/ui/*": ["./src/ui/*"],
       "@/components/*": ["./src/components/*"],
       "@/lib/*": ["./src/lib/*"],
       "@/app/*": ["./src/app/*"]

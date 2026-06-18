@@ -1,0 +1,24 @@
+import { StrategySpecSchema, type StrategySpec } from "@/regime/classifiers";
+import { RegimeClassificationSchema, type RegimeClassification } from "@/regime/classifier";
+
+export function parseStrategySpec(raw: unknown): StrategySpec {
+  const result = StrategySpecSchema.safeParse(raw);
+  if (!result.success) throw new Error(`Invalid strategy spec: ${JSON.stringify(result.error.issues)}`);
+  return result.data;
+}
+export function parseRegimeClassification(raw: unknown): RegimeClassification {
+  const result = RegimeClassificationSchema.safeParse(raw);
+  if (!result.success) throw new Error(`Invalid regime classification: ${JSON.stringify(result.error.issues)}`);
+  return result.data;
+}
+export function generateDeterministicStrategy(regime: string, confidence: number): StrategySpec {
+  const base = { regime: regime as StrategySpec["regime"], directional_bias: "NEUTRAL" as const, confidence, setup_name: "Deterministic Fallback", indicators_used: ["SMA-20", "SMA-50", "RSI-14"], entry_rules: [] as string[], exit_rules: [] as string[], invalidation_rules: [] as string[], sizing_guidance: "ZERO" as const, holding_horizon: "SWING" as const, do_not_trade_conditions: [] as string[], rationale: "Generated deterministically", evidence_summary: [] as string[] };
+  switch (regime) {
+    case "TREND_UP": return { ...base, directional_bias: "LONG", setup_name: "Trend Continuation Long", sizing_guidance: confidence > 0.6 ? "MEDIUM" : "SMALL", entry_rules: ["Price pulls back to SMA-20 from above", "RSI(14) between 40 and 60", "Price remains above SMA-50"], exit_rules: ["RSI(14) exceeds 75", "Price closes below SMA-50", "Trailing stop at 2x ATR(14)"], invalidation_rules: ["Price closes below SMA-50 with volume spike"], do_not_trade_conditions: ["RSI > 80", "Volume below 50% of 20-day average"], evidence_summary: [`Regime: ${regime}`, `Confidence: ${(confidence * 100).toFixed(0)}%`, "Direction: LONG"] };
+    case "TREND_DOWN": return { ...base, directional_bias: "SHORT", setup_name: "Trend Continuation Short", sizing_guidance: confidence > 0.6 ? "MEDIUM" : "SMALL", entry_rules: ["Price bounces to SMA-20 from below", "RSI(14) between 40 and 60", "Price remains below SMA-50"], exit_rules: ["RSI(14) drops below 25", "Price closes above SMA-50", "Trailing stop at 2x ATR(14)"], invalidation_rules: ["Price closes above SMA-50 with volume spike"], do_not_trade_conditions: ["RSI < 20", "Volume below 50% of 20-day average"], evidence_summary: [`Regime: ${regime}`, `Confidence: ${(confidence * 100).toFixed(0)}%`, "Direction: SHORT"] };
+    case "MEAN_REVERT_UP": return { ...base, directional_bias: "LONG", setup_name: "Oversold Bounce", sizing_guidance: "SMALL", entry_rules: ["RSI(14) drops below 30", "Price shows bullish candle (close > open)", "Price is >15% below 20-day high"], exit_rules: ["RSI(14) reaches 55", "Price reaches SMA-20", "Stop loss at 5% below entry"], invalidation_rules: ["Price makes new low with RSI making new low"], do_not_trade_conditions: ["Macro event within 24h", "Volume below average"], evidence_summary: [`Regime: ${regime}`, `Confidence: ${(confidence * 100).toFixed(0)}%`, "Direction: LONG"] };
+    case "MEAN_REVERT_DOWN": return { ...base, directional_bias: "SHORT", setup_name: "Overbought Fade", sizing_guidance: "SMALL", entry_rules: ["RSI(14) rises above 70", "Price shows bearish candle (close < open)", "Price is >15% above 20-day low"], exit_rules: ["RSI(14) drops to 45", "Price reaches SMA-20", "Stop loss at 5% above entry"], invalidation_rules: ["Price makes new high with RSI making new high"], do_not_trade_conditions: ["Strong momentum with rising volume", "Funding rate deeply negative"], evidence_summary: [`Regime: ${regime}`, `Confidence: ${(confidence * 100).toFixed(0)}%`, "Direction: SHORT"] };
+    case "HIGH_VOL_BREAKOUT": return { ...base, setup_name: "Volatility Breakout", sizing_guidance: "SMALL", entry_rules: ["Price breaks above 20-bar high OR below 20-bar low", "ATR(14) > 150% of 20-day average", "Volume > 200% of 20-day average"], exit_rules: ["Price retraces 50% of breakout move", "ATR(14) contracts to below average", "Stop at breakout level"], invalidation_rules: ["Breakout fails within 3 bars (fakeout)"], do_not_trade_conditions: ["ATR below average", "Low volume environment"], evidence_summary: [`Regime: ${regime}`, `Confidence: ${(confidence * 100).toFixed(0)}%`, "Direction: NEUTRAL"] };
+    case "CHOP": default: return { ...base, do_not_trade_conditions: ["Range-bound price action", "Mixed or contradictory signals", "No clear regime"], evidence_summary: ["All signals neutral or conflicting", "Correct action is to stay flat"] };
+  }
+}
