@@ -12,16 +12,6 @@ function mulberry32(seed: number): () => number {
 }
 
 
-export interface PresetScenario { name: string; regime: Regime; description: string; symbol: string; }
-export const PRESET_SCENARIOS: PresetScenario[] = [
-  { name: "BTC Bull Run", regime: "TREND_UP", description: "Bitcoin in a strong uptrend", symbol: "BTC" },
-  { name: "ETH Bear Market", regime: "TREND_DOWN", description: "Ethereum in a downtrend", symbol: "ETH" },
-  { name: "SOL Oversold Bounce", regime: "MEAN_REVERT_UP", description: "Solana oversold after capitulation", symbol: "SOL" },
-  { name: "BNB Overbought Fade", regime: "MEAN_REVERT_DOWN", description: "BNB overextended to upside", symbol: "BNB" },
-  { name: "DOGE Volatility Breakout", regime: "HIGH_VOL_BREAKOUT", description: "Dogecoin extreme volatility", symbol: "DOGE" },
-  { name: "Market Chop", regime: "CHOP", description: "Sideways choppy market", symbol: "BTC" },
-];
-
 export function generateSyntheticData(regime: Regime, bars: number = 200): OHLCVBar[] {
   const data: OHLCVBar[] = [];
   // Deterministic seed based on regime name + bar count

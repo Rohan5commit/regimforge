@@ -1,16 +1,6 @@
-import { StrategySpecSchema, type StrategySpec } from "@/regime/classifiers";
-import { RegimeClassificationSchema, type RegimeClassification } from "@/regime/classifier";
+import type { StrategySpec } from "@/regime/classifiers";
 
-export function parseStrategySpec(raw: unknown): StrategySpec {
-  const result = StrategySpecSchema.safeParse(raw);
-  if (!result.success) throw new Error(`Invalid strategy spec: ${JSON.stringify(result.error.issues)}`);
-  return result.data;
-}
-export function parseRegimeClassification(raw: unknown): RegimeClassification {
-  const result = RegimeClassificationSchema.safeParse(raw);
-  if (!result.success) throw new Error(`Invalid regime classification: ${JSON.stringify(result.error.issues)}`);
-  return result.data;
-}
+/** Generate a deterministic strategy spec as fallback when AI is unavailable */
 export function generateDeterministicStrategy(regime: string, confidence: number): StrategySpec {
   const base = { regime: regime as StrategySpec["regime"], directional_bias: "NEUTRAL" as const, confidence, setup_name: "Deterministic Fallback", indicators_used: ["SMA-20", "SMA-50", "RSI-14"], entry_rules: [] as string[], exit_rules: [] as string[], invalidation_rules: [] as string[], sizing_guidance: "ZERO" as const, holding_horizon: "SWING" as const, do_not_trade_conditions: [] as string[], rationale: "Generated deterministically", evidence_summary: [] as string[] };
   switch (regime) {

@@ -24,7 +24,6 @@ const VAGUE_PATTERNS = [
   /when ready/i,
 ];
 
-// QUANTIFIABLE_PATTERNS removed - isQuantifiable unused
 
 /**
  * Validate a strategy spec for backtestability
