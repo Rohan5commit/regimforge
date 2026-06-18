@@ -8,7 +8,7 @@ export function adaptCoinMarketCapQuote(quote: Record<string, unknown>, symbol: 
     symbol: symbol.toUpperCase(), name: symbol.toUpperCase(),
     price: q.price ?? 0, price_change_24h: q.percent_change_24h ?? 0,
     price_change_7d: q.percent_change_7d ?? 0, volume_24h: q.volume_24h ?? 0,
-    volume_change_24h: 0, market_cap: q.market_cap ?? 0,
+    volume_change_24h: (q as Record<string, unknown>).volume_change_24h as number ?? 0, market_cap: q.market_cap ?? 0,
     high_24h: q.price ? q.price * 1.02 : 0, low_24h: q.price ? q.price * 0.98 : 0,
   };
 }

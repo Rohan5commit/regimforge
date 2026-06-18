@@ -17,5 +17,11 @@ describe("runBacktest", () => {
   it("CHOP no trades", () => { expect(runBacktest(CHOP, generateSyntheticData("CHOP", 200)).trade_count).toBe(0); });
   it("drawdown in [0,100]", () => { const r = runBacktest(TREND_UP, generateSyntheticData("TREND_UP", 200)); expect(r.max_drawdown).toBeGreaterThanOrEqual(0); expect(r.max_drawdown).toBeLessThanOrEqual(100); });
   it("win rate in [0,100]", () => { const r = runBacktest(TREND_UP, generateSyntheticData("TREND_UP", 200)); expect(r.win_rate).toBeGreaterThanOrEqual(0); expect(r.win_rate).toBeLessThanOrEqual(100); });
+
+  it("TREND_UP produces non-catastrophic return (regression: principal bug)", () => {
+    const r = runBacktest(TREND_UP, generateSyntheticData("TREND_UP", 200));
+    expect(r.total_return).toBeGreaterThan(-50);
+    expect(r.trade_count).toBeGreaterThan(0);
+  });
   it("total return is finite", () => { expect(Number.isFinite(runBacktest(TREND_UP, generateSyntheticData("TREND_UP", 200)).total_return)).toBe(true); });
 });

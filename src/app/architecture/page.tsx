@@ -23,7 +23,6 @@ const SECTIONS = [
     { name: "src/backtest/metrics.ts", desc: "Technical indicators" },
     { name: "src/backtest/scenarios.ts", desc: "Synthetic data + presets" },
     { name: "src/ai/nim-client.ts", desc: "NVIDIA NIM client" },
-    { name: "src/ai/schemas.ts", desc: "AI response schemas" },
     { name: "src/orchestration/runner.ts", desc: "Pipeline orchestration" },
     { name: "src/orchestration/critique-loop.ts", desc: "AI critique loop" },
     { name: "src/data/cmc-client.ts", desc: "CMC data adapter" },
