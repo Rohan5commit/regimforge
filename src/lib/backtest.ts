@@ -42,15 +42,6 @@ function sma(data: number[], period: number): number[] {
   return result;
 }
 
-function ema(data: number[], period: number): number[] {
-  const k = 2 / (period + 1);
-  const result: number[] = [data[0]];
-  for (let i = 1; i < data.length; i++) {
-    result.push(data[i] * k + result[i - 1] * (1 - k));
-  }
-  return result;
-}
-
 function rsi(closes: number[], period: number): number[] {
   const changes: number[] = [];
   for (let i = 1; i < closes.length; i++) {
@@ -246,12 +237,14 @@ export function runBacktest(
         const shares = size / bar.close;
         position = 1;
         entryPrice = bar.close;
+        entryBarIndex = i;
         cash -= size + size * config.commission_rate;
       } else if (action === "SELL" && spec.directional_bias !== "LONG") {
         const size = cash * config.max_position_pct;
         const shares = size / bar.close;
         position = -1;
         entryPrice = bar.close;
+        entryBarIndex = i;
         cash -= size * config.commission_rate;
       }
     } else {
@@ -268,7 +261,7 @@ export function runBacktest(
           exit_price: bar.close,
           direction: position === 1 ? "LONG" : "SHORT",
           return_pct: ((bar.close - entryPrice) / entryPrice) * position * 100,
-          holding_bars: 1,
+          holding_bars: Math.max(1, i - entryBarIndex),
         });
         position = 0;
         entryPrice = 0;
@@ -286,7 +279,7 @@ export function runBacktest(
       exit_price: lastBar.close,
       direction: position === 1 ? "LONG" : "SHORT",
       return_pct: ((lastBar.close - entryPrice) / entryPrice) * position * 100,
-      holding_bars: 1,
+      holding_bars: Math.max(1, bars.length - 1 - entryBarIndex),
     });
   }
 
