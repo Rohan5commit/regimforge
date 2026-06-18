@@ -48,7 +48,7 @@ export function runBacktest(spec: StrategySpec, bars: OHLCVBar[], config: Backte
   for (let i = 0; i < bars.length; i++) {
     const bar = bars[i];
     const { action, reason } = evaluateBar(bar, bars, i, spec, indicators);
-    const equity = cash + (position !== 0 ? position * (bar.close - entryPrice) * positionSize / entryPrice : 0);
+    const equity = cash + (position !== 0 ? positionSize + position * (bar.close - entryPrice) * positionSize / entryPrice : 0);
     equityCurve.push(equity);
     peakEquity = Math.max(peakEquity, equity);
     maxDrawdown = Math.max(maxDrawdown, (peakEquity - equity) / peakEquity);
@@ -57,7 +57,7 @@ export function runBacktest(spec: StrategySpec, bars: OHLCVBar[], config: Backte
       else if (action === "SELL" && spec.directional_bias !== "LONG") { positionSize = cash * config.max_position_pct; position = -1; entryPrice = bar.close; entryBarIndex = i; cash -= positionSize * config.commission_rate; }
     } else {
       if ((position === 1 && (action === "SELL" || reason.includes("target"))) || (position === -1 && (action === "BUY" || reason.includes("target")))) {
-        const exitValue = position * (bar.close - entryPrice) * positionSize / entryPrice;
+        const exitValue = positionSize + position * (bar.close - entryPrice) * positionSize / entryPrice;
         cash += exitValue; cash -= Math.abs(exitValue) * config.commission_rate;
         trades.push({ entry_price: entryPrice, exit_price: bar.close, direction: position === 1 ? "LONG" : "SHORT", return_pct: ((bar.close - entryPrice) / entryPrice) * position * 100, holding_bars: Math.max(1, i - entryBarIndex) });
         position = 0; entryPrice = 0; positionSize = 0;

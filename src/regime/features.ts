@@ -1,4 +1,5 @@
 import type { MarketContext } from "@/regime/classifiers";
+import { clamp } from "@/lib/utils";
 
 export interface RegimeSignals {
   momentum: number;
@@ -7,8 +8,6 @@ export interface RegimeSignals {
   derivatives: number;
   onchain: number;
 }
-
-function clamp(v: number, min: number, max: number): number { return Math.min(max, Math.max(min, v)); }
 
 export function computeRegimeSignals(ctx: MarketContext): RegimeSignals {
   let momentum = 0;

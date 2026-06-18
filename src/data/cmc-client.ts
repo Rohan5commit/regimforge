@@ -1,4 +1,5 @@
 import type { MarketContext } from "@/regime/classifiers";
+import { adaptCoinMarketCapQuote } from "@/data/adapters";
 
 const CMC_BASE_URL = "https://pro-api.coinmarketcap.com/v1";
 
@@ -11,7 +12,7 @@ export async function fetchMarketContext(symbol: string): Promise<MarketContext>
     const data = await res.json();
     const q = data.data?.[symbol.toUpperCase()]?.quote?.USD;
     if (!q) throw new Error(`No data for ${symbol}`);
-    return { symbol: symbol.toUpperCase(), name: symbol.toUpperCase(), price: q.price ?? 0, price_change_24h: q.percent_change_24h ?? 0, price_change_7d: q.percent_change_7d ?? 0, volume_24h: q.volume_24h ?? 0, volume_change_24h: q.volume_change_24h ?? 0, market_cap: q.market_cap ?? 0, high_24h: q.percent_change_24h > 0 ? q.price * 1.02 : q.price, low_24h: q.percent_change_24h > 0 ? q.price * 0.98 : q.price };
+    return adaptCoinMarketCapQuote(q as Record<string, unknown>, symbol);
   } catch { return getDemoMarketContext(symbol); }
 }
 

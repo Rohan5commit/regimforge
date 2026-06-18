@@ -7,6 +7,7 @@ import { buildRegimeClassificationMessages, buildStrategyGenerationMessages } fr
 import { validateStrategy } from "@/regime/validators";
 import { generateDeterministicStrategy } from "@/skill/parser";
 import { buildExplanation } from "@/ui/inspectors";
+import { runCritiqueLoop } from "@/orchestration/critique-loop";
 import { runBacktest } from "@/backtest/engine";
 import { generateSyntheticData } from "@/backtest/scenarios";
 
@@ -61,6 +62,14 @@ export async function runSkill(context: MarketContext, options: RunOptions = {})
   }
   const validation = validateStrategy(strategy);
   if (!validation.valid && strategy.regime === "CHOP") { strategy.directional_bias = "NEUTRAL"; strategy.sizing_guidance = "ZERO"; }
+  // Run AI critique loop when validation fails or confidence is low
+  if (useAI && (!validation.valid || strategy.confidence < 0.5)) {
+    try {
+      strategy = await runCritiqueLoop(strategy, true);
+    } catch (e) {
+      console.error("Critique loop failed:", e);
+    }
+  }
   const explanation = buildExplanation(signals, strategy, regimeData.reasoning);
   let backtestResult = undefined;
   if (shouldBacktest) { backtestResult = runBacktest(strategy, generateSyntheticData(strategy.regime, backtestBars)); }

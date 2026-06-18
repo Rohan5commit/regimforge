@@ -104,6 +104,4 @@ function isVague(rule: string): boolean {
   return VAGUE_PATTERNS.some((p) => p.test(rule));
 }
 
-function isQuantifiable(rule: string): boolean {
-  return QUANTIFIABLE_PATTERNS.some((p) => p.test(rule));
-}
+// isQuantifiable available for future use if needed
