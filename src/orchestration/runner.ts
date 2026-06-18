@@ -64,11 +64,7 @@ export async function runSkill(context: MarketContext, options: RunOptions = {})
   if (!validation.valid && strategy.regime === "CHOP") { strategy.directional_bias = "NEUTRAL"; strategy.sizing_guidance = "ZERO"; }
   // Run AI critique loop when validation fails or confidence is low
   if (useAI && (!validation.valid || strategy.confidence < 0.5)) {
-    try {
-      strategy = await runCritiqueLoop(strategy, true);
-    } catch (e) {
-      console.error("Critique loop failed:", e);
-    }
+    strategy = await runCritiqueLoop(strategy, true);
   }
   const explanation = buildExplanation(signals, strategy, regimeData.reasoning);
   let backtestResult = undefined;

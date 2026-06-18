@@ -24,7 +24,3 @@ export function getPresetContext(symbol: string): MarketContext | undefined {
   return DEMO_PRESETS[symbol.toUpperCase()];
 }
 
-/** Check if a symbol has a demo preset available */
-export function hasPreset(symbol: string): boolean {
-  return symbol.toUpperCase() in DEMO_PRESETS;
-}

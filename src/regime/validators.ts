@@ -24,21 +24,7 @@ const VAGUE_PATTERNS = [
   /when ready/i,
 ];
 
-const QUANTIFIABLE_PATTERNS = [
-  /rsi\s*[<>=!]+\s*\d+/i,
-  /macd/i,
-  /sma|ema|moving average/i,
-  /price\s*[<>=!]+/i,
-  /volume\s*[<>=!]+/i,
-  /bollinger/i,
-  /atr\s*[<>=!]+/i,
-  /\d+\s*%/i,
-  /cross(es|ing)?\s*(above|below)/i,
-  /drawdown/i,
-  /stop\s*loss/i,
-  /take\s*profit/i,
-  /consecutive/i,
-];
+// QUANTIFIABLE_PATTERNS removed - isQuantifiable unused
 
 /**
  * Validate a strategy spec for backtestability
@@ -104,4 +90,4 @@ function isVague(rule: string): boolean {
   return VAGUE_PATTERNS.some((p) => p.test(rule));
 }
 
-// isQuantifiable available for future use if needed
+
