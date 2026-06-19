@@ -90,23 +90,44 @@ Open [http://localhost:3000](http://localhost:3000)
 ```
 /
   src/
+    ai/
+      nim-client.ts       — NVIDIA NIM client with retry logic
+    backtest/
+      engine.ts           — Backtesting engine with unit-based position tracking
+      metrics.ts          — Technical indicators (SMA, RSI, ATR)
+      scenarios.ts        — Synthetic data generation for backtests
+    data/
+      adapters.ts         — Market data adapter layer
+      cmc-client.ts       — CoinMarketCap API client
     lib/
-      schemas.ts        — Zod-validated strategy spec and market context
-      nim-client.ts     — NVIDIA NIM client with retry logic
-      prompts.ts        — Structured AI prompts
-      regime.ts         — Regime classification engine
-      runner.ts         — Full orchestration pipeline
-      backtest.ts       — Backtesting engine with technical indicators
-      validator.ts      — Deterministic rule validation
-      explain.ts        — Explainability layer
-      cmc-client.ts     — CoinMarketCap data adapter
+      utils.ts            — Shared utilities
+    orchestration/
+      runner.ts           — Full orchestration pipeline
+      critique-loop.ts    — AI strategy critique and regeneration
+    regime/
+      classifier.ts       — Regime classification engine
+      classifiers.ts      — Zod schemas for strategy spec, market context, results
+      features.ts         — Feature extraction from market data
+      validators.ts       — Deterministic rule validation
+    skill/
+      cmc-skill.ts        — CoinMarketCap Agent Hub skill interface
+      parser.ts           — Skill input/output parsing
+      prompts.ts          — Structured AI prompts (regime, strategy, critique)
+    ui/
+      charts.tsx          — Equity curve and chart components
+      inspectors.ts       — Output inspectors for regime, strategy, backtest
     app/
-      page.tsx          — Main demo page
-      layout.tsx        — Root layout
-      globals.css       — Global styles
-      api/skill/        — Skill execution API route
-      architecture/     — Judge-facing architecture page
-  docs/                 — Documentation
+      page.tsx            — Main demo page
+      layout.tsx          — Root layout
+      globals.css         — Global styles
+      api/skill/route.ts  — Skill execution API endpoint
+      architecture/       — Judge-facing architecture page
+    __tests__/
+      backtest.test.ts    — Backtest engine tests
+      regime.test.ts      — Regime classification tests
+      schemas.test.ts     — Schema validation tests
+      validator.test.ts   — Rule validation tests
+  docs/                   — Documentation
   README.md
 ```
 
