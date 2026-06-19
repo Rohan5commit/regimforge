@@ -91,7 +91,7 @@ export default function ArchitecturePage() {
           <h2 className="text-lg font-semibold">Live System Status</h2>
         </div>
         {health ? (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
             <div className="p-3 rounded-lg bg-zinc-800/50">
               <p className="text-[10px] text-zinc-500 uppercase">Status</p>
               <p className="text-sm font-semibold text-emerald-400">● Online</p>

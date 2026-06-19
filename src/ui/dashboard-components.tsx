@@ -119,7 +119,7 @@ export function BacktestPanel({ backtest }: { backtest: NonNullable<SkillOutput[
             <div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div>
             <span className="text-xs font-medium text-zinc-300">Multi-Seed Distribution ({backtest.multi_seed_stats.runs} runs)</span>
           </div>
-          <div className="grid grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
             <div><span className="text-[10px] text-zinc-500 uppercase">Min</span><p className={`text-sm font-semibold ${backtest.multi_seed_stats.min_return >= 0 ? "text-emerald-400" : "text-red-400"}`}>{backtest.multi_seed_stats.min_return.toFixed(1)}%</p></div>
             <div><span className="text-[10px] text-zinc-500 uppercase">Median</span><p className={`text-sm font-semibold ${backtest.multi_seed_stats.median_return >= 0 ? "text-emerald-400" : "text-red-400"}`}>{backtest.multi_seed_stats.median_return.toFixed(1)}%</p></div>
             <div><span className="text-[10px] text-zinc-500 uppercase">Max</span><p className={`text-sm font-semibold ${backtest.multi_seed_stats.max_return >= 0 ? "text-emerald-400" : "text-red-400"}`}>{backtest.multi_seed_stats.max_return.toFixed(1)}%</p></div>
@@ -128,7 +128,7 @@ export function BacktestPanel({ backtest }: { backtest: NonNullable<SkillOutput[
           <p className="text-[10px] text-zinc-500 mt-2">Deterministic synthetic scenarios for reproducible backtesting across different random seeds.</p>
         </div>
       )}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-4 mb-4">
         <StatCard label="Return" value={`${backtest.total_return > 0 ? "+" : ""}${backtest.total_return.toFixed(2)}%`} positive={backtest.total_return > 0} />
         <StatCard label="Drawdown" value={`-${backtest.max_drawdown.toFixed(2)}%`} positive={false} />
         <StatCard label="Win Rate" value={`${backtest.win_rate.toFixed(0)}%`} positive={backtest.win_rate > 50} />
