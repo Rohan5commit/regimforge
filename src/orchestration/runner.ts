@@ -10,6 +10,7 @@ import { buildExplanation } from "@/ui/inspectors";
 import { runCritiqueLoop } from "@/orchestration/critique-loop";
 import { runBacktest } from "@/backtest/engine";
 import { generateSyntheticData, computeMultiSeedStats } from "@/backtest/scenarios";
+import { recordSkillLatency } from "@/lib/health-tracker";
 
 export interface RunOptions { useAI?: boolean; runBacktest?: boolean; backtestBars?: number; }
 
@@ -41,6 +42,7 @@ Det. Pre-classification: ${det.regime} (confidence: ${det.confidence.toFixed(2)}
 }
 
 export async function runSkill(context: MarketContext, options: RunOptions = {}): Promise<SkillOutput> {
+  const startTime = performance.now();
   const { useAI = true, runBacktest: shouldBacktest = true, backtestBars = 200 } = options;
   const signals = computeRegimeSignals(context);
   const detResult = deterministicRegime(signals);
@@ -89,5 +91,6 @@ export async function runSkill(context: MarketContext, options: RunOptions = {})
       // Add disclosure to summary
       backtestResult.summary += ` (Deterministic synthetic scenario — ${backtestResult.multi_seed_stats.runs}-seed range: ${backtestResult.multi_seed_stats.min_return.toFixed(1)}% to ${backtestResult.multi_seed_stats.max_return.toFixed(1)}%, median ${backtestResult.multi_seed_stats.median_return.toFixed(1)}%)`;
     }
+  recordSkillLatency(Math.round(performance.now() - startTime));
   return { strategy, explanation, backtest: backtestResult, timestamp: new Date().toISOString(), symbol: context.symbol, validation: { valid: validation.valid, issues: validation.issues, warnings: validation.warnings } };
 }
