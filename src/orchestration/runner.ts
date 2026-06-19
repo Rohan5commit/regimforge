@@ -9,7 +9,7 @@ import { generateDeterministicStrategy } from "@/skill/parser";
 import { buildExplanation } from "@/ui/inspectors";
 import { runCritiqueLoop } from "@/orchestration/critique-loop";
 import { runBacktest } from "@/backtest/engine";
-import { generateSyntheticData } from "@/backtest/scenarios";
+import { generateSyntheticData, computeMultiSeedStats } from "@/backtest/scenarios";
 
 export interface RunOptions { useAI?: boolean; runBacktest?: boolean; backtestBars?: number; }
 
@@ -75,6 +75,19 @@ export async function runSkill(context: MarketContext, options: RunOptions = {})
   }
   const explanation = buildExplanation(signals, strategy, regimeData.reasoning);
   let backtestResult = undefined;
-  if (shouldBacktest) { backtestResult = runBacktest(strategy, generateSyntheticData(strategy.regime, backtestBars)); }
+  if (shouldBacktest) {
+      // Primary deterministic backtest
+      backtestResult = runBacktest(strategy, generateSyntheticData(strategy.regime, backtestBars));
+      // Run 5 additional backtests with different seeds for outcome distribution
+      const additionalReturns: number[] = [backtestResult.total_return];
+      for (let seed = 1; seed <= 4; seed++) {
+        const altData = generateSyntheticData(strategy.regime, backtestBars, seed * 1000);
+        const altResult = runBacktest(strategy, altData);
+        additionalReturns.push(altResult.total_return);
+      }
+      backtestResult.multi_seed_stats = computeMultiSeedStats(additionalReturns);
+      // Add disclosure to summary
+      backtestResult.summary += ` (Deterministic synthetic scenario — ${backtestResult.multi_seed_stats.runs}-seed range: ${backtestResult.multi_seed_stats.min_return.toFixed(1)}% to ${backtestResult.multi_seed_stats.max_return.toFixed(1)}%, median ${backtestResult.multi_seed_stats.median_return.toFixed(1)}%)`;
+    }
   return { strategy, explanation, backtest: backtestResult, timestamp: new Date().toISOString(), symbol: context.symbol, validation: { valid: validation.valid, issues: validation.issues, warnings: validation.warnings } };
 }

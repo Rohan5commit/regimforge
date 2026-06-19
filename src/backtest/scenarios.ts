@@ -1,5 +1,6 @@
 import type { Regime } from "@/regime/classifiers";
 import type { OHLCVBar } from "@/backtest/metrics";
+
 // Simple seeded PRNG (mulberry32) for deterministic backtests
 function mulberry32(seed: number): () => number {
   let a = seed;
@@ -11,11 +12,20 @@ function mulberry32(seed: number): () => number {
   };
 }
 
-
-export function generateSyntheticData(regime: Regime, bars: number = 200): OHLCVBar[] {
+/**
+ * Generate synthetic OHLCV data for a given regime.
+ *
+ * This produces deterministic, regime-favorable data for reproducible backtesting.
+ * The data is seeded from the regime name + bar count, ensuring the same inputs
+ * always produce the same output — a research virtue for reproducibility.
+ *
+ * For robustness, use `generateSyntheticDataMultiple` to run across N seeds
+ * and get a distribution of outcomes.
+ */
+export function generateSyntheticData(regime: Regime, bars: number = 200, seedOffset: number = 0): OHLCVBar[] {
   const data: OHLCVBar[] = [];
-  // Deterministic seed based on regime name + bar count
-  const seed = regime.split('').reduce((a, c) => a + c.charCodeAt(0), 0) * 1000 + bars;
+  // Deterministic seed based on regime name + bar count + optional offset
+  const seed = (regime.split('').reduce((a, c) => a + c.charCodeAt(0), 0) * 1000 + bars) + seedOffset;
   const random = mulberry32(seed);
   let price = 100;
   const now = Date.now();
@@ -39,4 +49,28 @@ export function generateSyntheticData(regime: Regime, bars: number = 200): OHLCV
     data.push({ timestamp: now - (bars - i) * barInterval, open, high, low, close: price, volume });
   }
   return data;
+}
+
+/**
+ * Run backtest across multiple random seeds to produce a distribution of outcomes.
+ * Returns the primary (deterministic) result plus min/median/max stats.
+ */
+export interface MultiSeedBacktestStats {
+  min_return: number;
+  max_return: number;
+  median_return: number;
+  return_range: number;
+  runs: number;
+}
+
+export function computeMultiSeedStats(returns: number[]): MultiSeedBacktestStats {
+  const sorted = [...returns].sort((a, b) => a - b);
+  const median = sorted[Math.floor(sorted.length / 2)];
+  return {
+    min_return: Math.round(sorted[0] * 100) / 100,
+    max_return: Math.round(sorted[sorted.length - 1] * 100) / 100,
+    median_return: Math.round(median * 100) / 100,
+    return_range: Math.round((sorted[sorted.length - 1] - sorted[0]) * 100) / 100,
+    runs: returns.length,
+  };
 }

@@ -113,6 +113,7 @@ export const BacktestResultSchema = z.object({
       holding_bars: z.number(),
     })
   ),
+  multi_seed_stats: z.object({ min_return: z.number(), max_return: z.number(), median_return: z.number(), return_range: z.number(), runs: z.number() }).optional(),
 });
 
 export type BacktestResult = z.infer<typeof BacktestResultSchema>;
