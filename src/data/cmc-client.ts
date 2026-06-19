@@ -3,17 +3,41 @@ import { adaptCoinMarketCapQuote } from "@/data/adapters";
 
 const CMC_BASE_URL = "https://pro-api.coinmarketcap.com/v1";
 
+/**
+ * Fetch live market data from CoinMarketCap.
+ *
+ * CMC v1 /cryptocurrency/quotes/latest provides:
+ *   ✓ price, percent_change_24h, percent_change_7d
+ *   ✓ volume_24h, market_cap
+ *   ✓ high_24h, low_24h (estimated ±2% from price in v1)
+ *
+ * CMC v1 does NOT provide (these remain undefined):
+ *   ✗ rsi_14, macd, macd_signal (require separate technical indicator API)
+ *   ✗ funding_rate, open_interest_change (require derivatives exchange feeds)
+ *   ✗ fear_greed_index (requires alternative.me API)
+ *   ✗ social_volume_change, active_addresses_change (require on-chain analytics)
+ *   ✗ exchange_flow_net, volatility_30d (require historical computation)
+ *
+ * When these fields are undefined, the regime classifier uses heuristic
+ * estimates derived from available price/volume data.
+ */
 export async function fetchMarketContext(symbol: string): Promise<MarketContext> {
   const apiKey = process.env.CMC_API_KEY;
   if (!apiKey) return getDemoMarketContext(symbol);
   try {
-    const res = await fetch(`${CMC_BASE_URL}/cryptocurrency/quotes/latest?symbol=${symbol.toUpperCase()}`, { headers: { "X-CMC_PRO_API_KEY": apiKey } });
+    const res = await fetch(
+      `${CMC_BASE_URL}/cryptocurrency/quotes/latest?symbol=${symbol.toUpperCase()}`,
+      { headers: { "X-CMC_PRO_API_KEY": apiKey } },
+    );
     if (!res.ok) throw new Error(`CMC API error: ${res.status}`);
     const data = await res.json();
     const q = data.data?.[symbol.toUpperCase()]?.quote?.USD;
     if (!q) throw new Error(`No data for ${symbol}`);
     return adaptCoinMarketCapQuote(q as Record<string, unknown>, symbol);
-  } catch { return getDemoMarketContext(symbol); }
+  } catch (e) {
+    console.warn(`[cmc-client] Live CMC API failed, falling back to demo data: ${e}`);
+    return getDemoMarketContext(symbol);
+  }
 }
 
 export const DEMO_PRESETS: Record<string, MarketContext> = {

@@ -22,7 +22,7 @@ RegimeForge is a CoinMarketCap Agent Hub-compatible AI strategy skill built for 
 
 ## How It Works
 
-1. **Data Ingestion** — Consumes market data from CoinMarketCap Agent Hub (price, volume, RSI, funding rate, fear/greed, social volume, on-chain flows)
+1. **Data Ingestion** — Consumes live market data from CoinMarketCap (price, volume, market cap, 24h high/low). Technical indicators (RSI, MACD, funding rate, fear/greed, on-chain flows) are estimated heuristically from available price/volume data when using the live CMC path; full indicator data available in demo mode.
 2. **Signal Computation** — Computes deterministic signals across 5 dimensions: momentum, sentiment, volatility, derivatives, on-chain
 3. **AI Regime Classification** — NVIDIA NIM classifies the market into one of 6 regimes
 4. **Strategy Generation** — Generates a structured strategy spec with quantifiable entry/exit/invalidation rules
@@ -49,7 +49,7 @@ RegimeForge is a CoinMarketCap Agent Hub-compatible AI strategy skill built for 
 - **Tailwind CSS v4** — Styling
 - **Zod** — Schema validation
 - **NVIDIA NIM** — AI inference (LLaMA 3.3 70B)
-- **CoinMarketCap** — Market data source
+- **CoinMarketCap** — Market data source (live API returns price/volume/market cap; technical indicators estimated heuristically)
 
 ## Setup
 
@@ -76,7 +76,7 @@ Open [http://localhost:3000](http://localhost:3000)
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `NIM_API_KEY` | Yes | NVIDIA NIM API key |
-| `CMC_API_KEY` | No | CoinMarketCap API key (uses demo data if absent) |
+| `CMC_API_KEY` | No | CoinMarketCap API key — live path returns price/volume/market cap only; technical indicators (RSI, MACD, funding rate, etc.) are heuristic estimates. Omit for demo mode with full indicator data. |
 
 ## Demo Flow
 
@@ -119,7 +119,7 @@ Open [http://localhost:3000](http://localhost:3000)
     app/
       page.tsx            — Main demo page
       layout.tsx          — Root layout
-      globals.css         — Global styles
+      globals.css         — Global styles (Tailwind v4)
       api/skill/route.ts  — Skill execution API endpoint
       architecture/       — Judge-facing architecture page
     __tests__/
