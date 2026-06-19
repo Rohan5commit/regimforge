@@ -1,6 +1,6 @@
 import type { MarketContext, StrategySpec, SkillOutput } from "@/regime/classifiers";
 import { StrategySpecSchema } from "@/regime/classifiers";
-import { computeRegimeSignals } from "@/regime/features";
+import { computeRegimeSignals, type RegimeSignals } from "@/regime/features";
 import { deterministicRegime, RegimeClassificationSchema } from "@/regime/classifier";
 import { nimChatJSON } from "@/ai/nim-client";
 import { buildRegimeClassificationMessages, buildStrategyGenerationMessages } from "@/skill/prompts";
@@ -12,6 +12,13 @@ import { runBacktest } from "@/backtest/engine";
 import { generateSyntheticData } from "@/backtest/scenarios";
 
 export interface RunOptions { useAI?: boolean; runBacktest?: boolean; backtestBars?: number; }
+
+/** Compute the dominant signal by absolute value from the signals object. */
+function getDominantSignal(signals: RegimeSignals): string {
+  const entries = Object.entries(signals);
+  if (entries.length === 0) return "momentum";
+  return entries.sort((a, b) => Math.abs(b[1]) - Math.abs(a[1]))[0][0];
+}
 
 function formatContextForAI(ctx: MarketContext, signals: ReturnType<typeof computeRegimeSignals>, det: ReturnType<typeof deterministicRegime>): string {
   return `Symbol: ${ctx.symbol}
@@ -44,10 +51,10 @@ export async function runSkill(context: MarketContext, options: RunOptions = {})
       regimeData = await nimChatJSON(buildRegimeClassificationMessages(ctxStr), RegimeClassificationSchema, { temperature: 0.2 });
     } catch (e) {
       console.error("AI classification failed, using deterministic:", e);
-      regimeData = { regime: detResult.regime, confidence: detResult.confidence, reasoning: `Deterministic: ${detResult.regime}`, primary_signal: "momentum", signal_scores: signals };
+      regimeData = { regime: detResult.regime, confidence: detResult.confidence, reasoning: `Deterministic: ${detResult.regime}`, primary_signal: getDominantSignal(signals), signal_scores: signals };
     }
   } else {
-    regimeData = { regime: detResult.regime, confidence: detResult.confidence, reasoning: `Deterministic: ${detResult.regime}`, primary_signal: "momentum", signal_scores: signals };
+    regimeData = { regime: detResult.regime, confidence: detResult.confidence, reasoning: `Deterministic: ${detResult.regime}`, primary_signal: getDominantSignal(signals), signal_scores: signals };
   }
   let strategy: StrategySpec;
   if (useAI) {
