@@ -3,10 +3,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { DEMO_PRESETS } from "@/data/cmc-client";
 import type { SkillOutput } from "@/regime/classifiers";
-import { EquityCurve, StatCard } from "@/ui/charts";
+import { RegimeCard, StrategyRules, ValidationPanel, ExplainabilityPanel, BacktestPanel, EvidencePanel, IndicatorsPanel } from "@/ui/dashboard-components";
+
 const PRESETS = Object.keys(DEMO_PRESETS);
-const REGIME_COLORS: Record<string, string> = { TREND_UP: "text-emerald-400", TREND_DOWN: "text-red-400", MEAN_REVERT_UP: "text-blue-400", MEAN_REVERT_DOWN: "text-orange-400", HIGH_VOL_BREAKOUT: "text-yellow-400", CHOP: "text-zinc-400" };
-const REGIME_BG: Record<string, string> = { TREND_UP: "bg-emerald-500/10 border-emerald-500/20", TREND_DOWN: "bg-red-500/10 border-red-500/20", MEAN_REVERT_UP: "bg-blue-500/10 border-blue-500/20", MEAN_REVERT_DOWN: "bg-orange-500/10 border-orange-500/20", HIGH_VOL_BREAKOUT: "bg-yellow-500/10 border-yellow-500/20", CHOP: "bg-zinc-500/10 border-zinc-500/20" };
+
 export default function Home() {
   const [selectedPreset, setSelectedPreset] = useState("BTC");
   const [loading, setLoading] = useState(false);
@@ -26,38 +26,15 @@ export default function Home() {
       {error && <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/20 text-red-400 text-sm mb-8">{error}</div>}
       {result && (
         <div className="space-y-6">
-          <div className={`p-6 rounded-xl border ${REGIME_BG[result.strategy.regime]}`}><div className="flex items-center justify-between mb-4"><div><p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Detected Regime</p><h2 className={`text-3xl font-bold ${REGIME_COLORS[result.strategy.regime]}`}>{result.strategy.regime.replace(/_/g, " ")}</h2></div><div className="text-right"><p className="text-xs text-zinc-500 uppercase tracking-wider mb-1">Confidence</p><p className="text-2xl font-bold">{(result.strategy.confidence * 100).toFixed(0)}%</p></div></div><div className="flex flex-wrap gap-3"><span className="px-3 py-1 rounded-full bg-zinc-800/50 text-sm">Direction: <strong>{result.strategy.directional_bias}</strong></span><span className="px-3 py-1 rounded-full bg-zinc-800/50 text-sm">Setup: <strong>{result.strategy.setup_name}</strong></span><span className="px-3 py-1 rounded-full bg-zinc-800/50 text-sm">Sizing: <strong>{result.strategy.sizing_guidance}</strong></span><span className="px-3 py-1 rounded-full bg-zinc-800/50 text-sm">Horizon: <strong>{result.strategy.holding_horizon}</strong></span></div></div>
+          <RegimeCard strategy={result.strategy} />
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="p-5 rounded-xl bg-[var(--card)] border border-[var(--border)]"><h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-3">Strategy Rules</h3><div className="space-y-4"><div><p className="text-xs text-emerald-400 font-medium mb-1">Entry Rules</p><ul className="space-y-1">{result.strategy.entry_rules.map((r, i) => <li key={i} className="text-sm text-zinc-300 flex items-start gap-2"><span className="text-emerald-500 mt-0.5">→</span> {r}</li>)}</ul></div><div><p className="text-xs text-red-400 font-medium mb-1">Exit Rules</p><ul className="space-y-1">{result.strategy.exit_rules.map((r, i) => <li key={i} className="text-sm text-zinc-300 flex items-start gap-2"><span className="text-red-500 mt-0.5">←</span> {r}</li>)}</ul></div><div><p className="text-xs text-orange-400 font-medium mb-1">Invalidation Rules</p><ul className="space-y-1">{result.strategy.invalidation_rules.map((r, i) => <li key={i} className="text-sm text-zinc-300 flex items-start gap-2"><span className="text-orange-500 mt-0.5">✕</span> {r}</li>)}</ul></div></div></div>
-            {/* Validation Warnings */}
-            {result.validation && (result.validation.issues.length > 0 || result.validation.warnings.length > 0) && (
-              <div className="p-5 rounded-xl bg-[var(--card)] border border-[var(--border)]">
-                <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-3">Strategy Validation</h3>
-                <div className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium mb-3 ${result.validation.valid ? "bg-yellow-500/10 text-yellow-400" : "bg-red-500/10 text-red-400"}`}>
-                  <div className={`w-1.5 h-1.5 rounded-full ${result.validation.valid ? "bg-yellow-500" : "bg-red-500"}`}></div>
-                  {result.validation.valid ? "Valid with warnings" : "Issues found"}
-                </div>
-                <div className="space-y-2">
-                  {result.validation.issues.map((issue, i) => (
-                    <div key={`issue-${i}`} className="flex items-start gap-2">
-                      <span className="text-red-400 text-xs mt-0.5">✗</span>
-                      <span className="text-zinc-400 text-xs">{issue}</span>
-                    </div>
-                  ))}
-                  {result.validation.warnings.map((warn, i) => (
-                    <div key={`warn-${i}`} className="flex items-start gap-2">
-                      <span className="text-yellow-400 text-xs mt-0.5">⚠</span>
-                      <span className="text-zinc-400 text-xs">{warn}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            <div className="p-5 rounded-xl bg-[var(--card)] border border-[var(--border)]"><h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-3">Explainability</h3><p className="text-sm text-zinc-300 mb-4">{result.explanation.regime_reasoning}</p><div className="space-y-2 mb-4"><p className="text-xs text-zinc-500 uppercase tracking-wider">Signal Weights</p>{result.explanation.signal_weights.map(sw => <div key={sw.signal} className="flex items-center gap-3"><span className="text-xs text-zinc-400 w-20">{sw.signal}</span><div className="flex-1 h-2 bg-zinc-800 rounded-full overflow-hidden"><div className="h-full bg-emerald-500 rounded-full" style={{ width: `${sw.weight * 100}%` }} /></div><span className="text-xs text-zinc-500 w-10 text-right">{(sw.weight * 100).toFixed(0)}%</span></div>)}</div>{result.explanation.weak_points.length > 0 && <div><p className="text-xs text-yellow-400 font-medium mb-1">Weak Points</p><ul className="space-y-1">{result.explanation.weak_points.map((wp, i) => <li key={i} className="text-xs text-zinc-400">⚠️ {wp}</li>)}</ul></div>}</div>
+            <StrategyRules strategy={result.strategy} />
+            <ValidationPanel validation={result.validation} />
+            <ExplainabilityPanel explanation={result.explanation} />
           </div>
-          {result.backtest && <div className="p-5 rounded-xl bg-[var(--card)] border border-[var(--border)]"><h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-3">Backtest Results</h3>{result.backtest.multi_seed_stats && (<div className="mb-4 p-3 rounded-lg bg-zinc-800/50 border border-zinc-700/50"><div className="flex items-center gap-2 mb-2"><div className="w-1.5 h-1.5 rounded-full bg-blue-400"></div><span className="text-xs font-medium text-zinc-300">Multi-Seed Distribution ({result.backtest.multi_seed_stats.runs} runs)</span></div><div className="grid grid-cols-4 gap-3"><div><span className="text-[10px] text-zinc-500 uppercase">Min</span><p className={`text-sm font-semibold ${result.backtest.multi_seed_stats.min_return >= 0 ? "text-emerald-400" : "text-red-400"}`}>{result.backtest.multi_seed_stats.min_return.toFixed(1)}%</p></div><div><span className="text-[10px] text-zinc-500 uppercase">Median</span><p className={`text-sm font-semibold ${result.backtest.multi_seed_stats.median_return >= 0 ? "text-emerald-400" : "text-red-400"}`}>{result.backtest.multi_seed_stats.median_return.toFixed(1)}%</p></div><div><span className="text-[10px] text-zinc-500 uppercase">Max</span><p className={`text-sm font-semibold ${result.backtest.multi_seed_stats.max_return >= 0 ? "text-emerald-400" : "text-red-400"}`}>{result.backtest.multi_seed_stats.max_return.toFixed(1)}%</p></div><div><span className="text-[10px] text-zinc-500 uppercase">Range</span><p className="text-sm font-semibold text-zinc-300">{result.backtest.multi_seed_stats.return_range.toFixed(1)}%</p></div></div><p className="text-[10px] text-zinc-500 mt-2">Deterministic synthetic scenarios for reproducible backtesting across different random seeds.</p></div>)}<div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4"><StatCard label="Return" value={`${result.backtest.total_return > 0 ? "+" : ""}${result.backtest.total_return.toFixed(2)}%`} positive={result.backtest.total_return > 0} /><StatCard label="Drawdown" value={`-${result.backtest.max_drawdown.toFixed(2)}%`} positive={false} /><StatCard label="Win Rate" value={`${result.backtest.win_rate.toFixed(0)}%`} positive={result.backtest.win_rate > 50} /><StatCard label="Trades" value={String(result.backtest.trade_count)} positive={result.backtest.trade_count > 0} /><StatCard label="Holding" value={result.backtest.avg_holding_period} positive={true} /></div><p className="text-sm text-zinc-400">{result.backtest.summary}</p>{result.backtest.equity_curve.length > 1 && <div className="mt-4"><p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Equity Curve</p><EquityCurve data={result.backtest.equity_curve} /></div>}</div>}
-          <div className="p-5 rounded-xl bg-[var(--card)] border border-[var(--border)]"><h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-3">Evidence & Rationale</h3><p className="text-sm text-zinc-300 mb-3">{result.strategy.rationale}</p><div className="flex flex-wrap gap-2">{result.strategy.evidence_summary.map((e, i) => <span key={i} className="px-2.5 py-1 rounded-full bg-zinc-800 text-xs text-zinc-400">{e}</span>)}</div>{result.strategy.do_not_trade_conditions.length > 0 && <div className="mt-3"><p className="text-xs text-zinc-500 mb-1">Do Not Trade When:</p><ul className="space-y-1">{result.strategy.do_not_trade_conditions.map((c, i) => <li key={i} className="text-xs text-zinc-400">🚫 {c}</li>)}</ul></div>}</div>
-          <div className="p-5 rounded-xl bg-[var(--card)] border border-[var(--border)]"><h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400 mb-3">Indicators Used</h3><div className="flex flex-wrap gap-2">{result.strategy.indicators_used.map((ind, i) => <span key={i} className="px-3 py-1 rounded-lg bg-emerald-500/10 text-emerald-400 text-sm border border-emerald-500/20">{ind}</span>)}</div></div>
+          {result.backtest && <BacktestPanel backtest={result.backtest} />}
+          <EvidencePanel strategy={result.strategy} />
+          <IndicatorsPanel strategy={result.strategy} />
         </div>
       )}
       {!result && !loading && !error && <div className="text-center py-20"><div className="w-16 h-16 rounded-2xl bg-emerald-500/10 flex items-center justify-center mx-auto mb-4"><span className="text-emerald-500 text-2xl">⚡</span></div><h2 className="text-lg font-semibold mb-2">Select an asset and run the skill</h2><p className="text-sm text-zinc-500 max-w-md mx-auto">RegimeForge classifies market regimes, generates structured strategy specs, and produces backtestable rules — all powered by NVIDIA NIM AI.</p></div>}
