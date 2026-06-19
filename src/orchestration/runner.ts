@@ -76,5 +76,5 @@ export async function runSkill(context: MarketContext, options: RunOptions = {})
   const explanation = buildExplanation(signals, strategy, regimeData.reasoning);
   let backtestResult = undefined;
   if (shouldBacktest) { backtestResult = runBacktest(strategy, generateSyntheticData(strategy.regime, backtestBars)); }
-  return { strategy, explanation, backtest: backtestResult, timestamp: new Date().toISOString(), symbol: context.symbol };
+  return { strategy, explanation, backtest: backtestResult, timestamp: new Date().toISOString(), symbol: context.symbol, validation: { valid: validation.valid, issues: validation.issues, warnings: validation.warnings } };
 }

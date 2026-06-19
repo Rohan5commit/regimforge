@@ -126,6 +126,11 @@ export const SkillOutputSchema = z.object({
   backtest: BacktestResultSchema.optional(),
   timestamp: z.string(),
   symbol: z.string(),
+  validation: z.object({
+    valid: z.boolean(),
+    issues: z.array(z.string()),
+    warnings: z.array(z.string()),
+  }).optional(),
 });
 
 export type SkillOutput = z.infer<typeof SkillOutputSchema>;
