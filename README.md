@@ -79,6 +79,7 @@ Open [http://localhost:3000](http://localhost:3000)
 |----------|----------|-------------|
 | `NIM_API_KEY` | Yes | NVIDIA NIM API key |
 | `CMC_API_KEY` | No | CoinMarketCap API key — live path returns price/volume/market cap only; technical indicators (RSI, MACD, funding rate, etc.) are heuristic estimates. Omit for demo mode with full indicator data. |
+| `NIM_MODEL` | No | NVIDIA NIM model ID. Defaults to `meta/llama-3.3-70b-instruct`. Override for faster models (e.g. `meta/llama-3.1-8b-instruct`). |n| `NIM_BASE_URL` | No | NVIDIA NIM API base URL. Defaults to `https://integrate.api.nvidia.com/v1`. Only change for proxy/custom endpoints. |
 
 ## Demo Flow
 
