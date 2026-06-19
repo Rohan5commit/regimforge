@@ -1,5 +1,5 @@
 import type { StrategySpec, BacktestResult } from "@/regime/classifiers";
-import { sma, rsi, atr, type OHLCVBar } from "@/backtest/metrics";
+import { sma, rsi, atr, rollingMax, rollingMin, type OHLCVBar } from "@/backtest/metrics";
 
 export interface BacktestConfig {
   initial_capital: number;
@@ -17,7 +17,7 @@ function evaluateBar(
   bars: OHLCVBar[],
   index: number,
   spec: StrategySpec,
-  ind: { sma20: number[]; sma50: number[]; rsi14: number[]; atr14: number[] },
+  ind: { sma20: number[]; sma50: number[]; rsi14: number[]; atr14: number[]; high20: number[]; low20: number[] },
 ): { action: "BUY" | "SELL" | "HOLD"; reason: string } {
   const currentRSI = ind.rsi14[index];
   const currentSMA20 = ind.sma20[index];
@@ -67,15 +67,15 @@ function evaluateBar(
         return { action: "BUY", reason: "Target reached" };
       return { action: "HOLD", reason: "Waiting" };
     case "HIGH_VOL_BREAKOUT": {
-      const high20 = Math.max(
-        ...bars.slice(Math.max(0, index - 20), index).map((b) => b.high),
-      );
-      const low20 = Math.min(
-        ...bars.slice(Math.max(0, index - 20), index).map((b) => b.low),
-      );
-      if (bar.close > high20)
+      // Use index-1 to compare against previous 20 bars (excluding current bar)
+      if (index === 0) return { action: "HOLD", reason: "Insufficient data" };
+      const h20 = ind.high20[index - 1];
+      const l20 = ind.low20[index - 1];
+      if (isNaN(h20) || isNaN(l20))
+        return { action: "HOLD", reason: "Insufficient data" };
+      if (bar.close > h20)
         return { action: "BUY", reason: "Breakout above 20-bar high" };
-      if (bar.close < low20)
+      if (bar.close < l20)
         return { action: "SELL", reason: "Breakdown below 20-bar low" };
       return { action: "HOLD", reason: "Waiting" };
     }
@@ -115,6 +115,8 @@ export function runBacktest(
     sma50: sma(closes, 50),
     rsi14: rsi(closes, 14),
     atr14: atr(bars, 14),
+    high20: rollingMax(bars.map((b) => b.high), 20),
+    low20: rollingMin(bars.map((b) => b.low), 20),
   };
   let cash = config.initial_capital;
   let position = 0; // 0 = flat, 1 = long, -1 = short

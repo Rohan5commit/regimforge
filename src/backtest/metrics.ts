@@ -36,3 +36,35 @@ export function atr(bars: OHLCVBar[], period: number): number[] {
   }
   return sma(trs, period);
 }
+
+/** Rolling maximum of a numeric array over a sliding window. */
+export function rollingMax(data: number[], period: number): number[] {
+  const r: number[] = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) r.push(NaN);
+    else {
+      let max = -Infinity;
+      for (let j = i - period + 1; j <= i; j++) {
+        if (data[j] > max) max = data[j];
+      }
+      r.push(max);
+    }
+  }
+  return r;
+}
+
+/** Rolling minimum of a numeric array over a sliding window. */
+export function rollingMin(data: number[], period: number): number[] {
+  const r: number[] = [];
+  for (let i = 0; i < data.length; i++) {
+    if (i < period - 1) r.push(NaN);
+    else {
+      let min = Infinity;
+      for (let j = i - period + 1; j <= i; j++) {
+        if (data[j] < min) min = data[j];
+      }
+      r.push(min);
+    }
+  }
+  return r;
+}
