@@ -1,5 +1,7 @@
 # RegimeForge
 
+![CI](https://github.com/Rohan5commit/regimforge/actions/workflows/test.yml/badge.svg)
+
 > AI-powered market regime detection and backtestable strategy generation for BNB Hack Track 2
 
 **Tagline:** A CoinMarketCap-native AI strategy skill that detects crypto market regimes and emits backtestable trading rules.
